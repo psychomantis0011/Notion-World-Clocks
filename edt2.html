@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>EDT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --time-size:46px; --ampm-size:30px; --date-size:18px; --label-size:18px; --pad:20px; }
+
+  /* keep padding inside the height calc */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  /* match iframe height and hide overflow; make background transparent for Notion */
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: transparent;   /* was #000 */
+    color: #fff;
+    overflow: hidden;          /* 🚫 no scrollbars */
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  /* use height:100% instead of 100vh */
+  .frame {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--pad);       /* included in height via box-sizing */
+  }
+
+  .card { text-align:center; }
+  .label { font-size:var(--label-size); opacity:.95; margin-bottom:8px; }
+  .timeRow { display:inline-flex; align-items:baseline; gap:8px; }
+  .time { font-size:var(--time-size); font-weight:800; letter-spacing:.5px; }
+  .ampm { font-size:var(--ampm-size); font-weight:800; }
+  .date { font-size:var(--date-size); margin-top:10px; opacity:.95; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="card">
+    <div class="label">EDT</div>
+    <!-- ✅ Added class="time" and class="ampm" -->
+    <div class="timeRow">
+      <span id="time" class="time">--:--</span>
+      <span id="ampm" class="ampm"></span>
+    </div>
+    <div class="date" id="date">—</div>
+  </div>
+</div>
+<script>
+const TZ = "America/New_York"; //  automatically handled by locale rules 
+function ord(n){ if(n>3&&n<21) return n+"th"; switch(n%10){case 1:return n+"st";case 2:return n+"nd";case 3:return n+"rd";default:return n+"th";}}
+function fmtDate(d){
+  const p = new Intl.DateTimeFormat('en-GB',{timeZone:TZ,weekday:'long',day:'numeric',month:'long',year:'numeric'}).formatToParts(d);
+  const wd=p.find(x=>x.type==='weekday').value, day=parseInt(p.find(x=>x.type==='day').value,10),
+        mo=p.find(x=>x.type==='month').value, yr=p.find(x=>x.type==='year').value;
+  return `${wd}, ${ord(day)} ${mo}, ${yr}`;
+}
+function tick(){
+  const now=new Date();
+  const parts = new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour12:true,hour:'numeric',minute:'2-digit'}).formatToParts(now);
+  document.getElementById('time').textContent = `${parts.find(p=>p.type==='hour').value}:${parts.find(p=>p.type==='minute').value}`;
+  document.getElementById('ampm').textContent = (parts.find(p=>p.type==='dayPeriod').value||'').toUpperCase();
+  document.getElementById('date').textContent = fmtDate(now);
+}
+tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
