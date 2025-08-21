@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Multi Timezones (Notion-Embed)</title>
+<title>Multi Timezones Row</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
-    --time-size: 48px;
-    --ampm-size: 48px;
-    --date-size: 18px;
+    --time-size: 36px;
+    --ampm-size: 36px;
+    --date-size: 14px;
     --label-size: 16px;
-    --max-width: 1100px;
-    --gap: 18px;
+    --gap: 20px;
     --pad: 16px;
   }
   html, body { height:100%; margin:0; background:#000; }
@@ -20,64 +19,50 @@
     min-height:100vh; display:flex; align-items:center; justify-content:center;
     background:#000; padding:var(--pad);
   }
-  .wrap { width:100%; max-width:var(--max-width); }
-  .grid {
-    display:grid; gap:var(--gap);
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+  .row {
+    display:flex; flex-wrap:wrap; gap:var(--gap);
+    justify-content:center;
+    width:100%;
   }
-  /* Sydney spans full width on top */
-  .card.sydney { grid-column: 1 / -1; }
-
   .card {
+    flex: 1 1 180px; /* shrink/grow, min 180px */
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px;
-    padding: 18px 20px;
+    padding: 14px 16px;
     background: #0a0a0a;
     text-align: center;
+    min-width: 180px;
+    max-width: 220px;
   }
   .label { font-size: var(--label-size); opacity: 0.9; margin-bottom: 6px; }
-  .timeRow { display:inline-flex; align-items: baseline; gap:8px; }
+  .timeRow { display:inline-flex; align-items: baseline; gap:6px; }
   .time { font-size: var(--time-size); font-weight: 700; letter-spacing: 0.5px; }
   .ampm { font-size: var(--ampm-size); font-weight: 700; }
-  .date { font-size: var(--date-size); opacity: 0.95; margin-top: 10px; }
-
+  .date { font-size: var(--date-size); opacity: 0.95; margin-top: 6px; }
   @media (max-width: 720px){
-    :root{ --time-size: 40px; --ampm-size: 40px; --date-size: 16px; }
-    .grid { grid-template-columns: 1fr; }
+    :root{ --time-size:28px; --ampm-size:28px; --date-size:12px; }
   }
 </style>
 </head>
 <body>
   <div class="frame">
-    <div class="wrap">
-      <div class="grid" id="grid">
-        <!-- Cards are injected by JS -->
-      </div>
-    </div>
+    <div class="row" id="row"></div>
   </div>
 
 <script>
-/**
- * Order matters: Sydney first, then GMT, CEST, MST, EDT.
- * We use representative IANA time zones:
- *  - GMT  -> Etc/UTC (no DST)
- *  - CEST -> Europe/Berlin (observes CET/CEST)
- *  - MST  -> America/Phoenix (permanent MST, no DST)
- *  - EDT  -> America/New_York (EST/EDT depending on date)
- */
 const ZONES = [
-  { id: 'syd',  label: 'Sydney', tz: 'Australia/Sydney',   wide: true,  wantAbbrev: 'AEST/AEDT' },
-  { id: 'gmt',  label: 'GMT',    tz: 'Etc/UTC',            wantAbbrev: 'GMT'       },
-  { id: 'cest', label: 'CEST',   tz: 'Europe/Berlin',      wantAbbrev: 'CEST/CET'  },
-  { id: 'mst',  label: 'MST',    tz: 'America/Phoenix',    wantAbbrev: 'MST'       },
-  { id: 'edt',  label: 'EDT',    tz: 'America/New_York',   wantAbbrev: 'EDT/EST'   },
+  { id: 'syd',  label: 'Sydney', tz: 'Australia/Sydney' },
+  { id: 'gmt',  label: 'GMT',    tz: 'Etc/UTC' },
+  { id: 'cest', label: 'CEST',   tz: 'Europe/Berlin' },
+  { id: 'mst',  label: 'MST',    tz: 'America/Phoenix' },
+  { id: 'edt',  label: 'EDT',    tz: 'America/New_York' },
 ];
 
-const grid = document.getElementById('grid');
+const row = document.getElementById('row');
 
 function makeCard(z) {
   const card = document.createElement('div');
-  card.className = 'card' + (z.wide ? ' sydney' : '');
+  card.className = 'card';
   card.id = `card-${z.id}`;
 
   const label = document.createElement('div');
@@ -108,7 +93,7 @@ function makeCard(z) {
   card.appendChild(label);
   card.appendChild(timeRow);
   card.appendChild(dateEl);
-  grid.appendChild(card);
+  row.appendChild(card);
 }
 
 function toParts(now, tz) {
@@ -116,13 +101,11 @@ function toParts(now, tz) {
     timeZone: tz, hour12: true, hour: 'numeric', minute: '2-digit'
   }).formatToParts(now);
 }
-
 function fmtDate(now, tz) {
   return new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    timeZone: tz, weekday: 'short', month: 'short', day: 'numeric'
   }).format(now);
 }
-
 function updateAll() {
   const now = new Date();
   ZONES.forEach(z => {
