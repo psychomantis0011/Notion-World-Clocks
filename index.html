@@ -1,50 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Sydney Clock (Notion-Embed)</title>
-  <style>
-    :root{
-      /* tweak these to taste */
-      --time-size: 56px;
-      --ampm-size: 56px;      /* match time */
-      --date-size: 34px;
-      --label-size: 16px;
-      --max-width: 900px;     /* fit nicely in Notion embed */
-      --pad: 16px;
-    }
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: #000;
-    }
-    /* Center the whole widget in the frame */
-    .frame {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #000;
-      color: #fff;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    #clock-container {
-      width: 100%;
-      max-width: var(--max-width);
-      text-align: center !important;
-      padding: var(--pad);
-    }
+<meta charset="UTF-8" />
+<title>Sydney Clock (Pure JS)</title>
+<style>
+  :root{ --time-size:56px; --ampm-size:56px; --date-size:34px; --label-size:16px; --max-width:900px; --pad:16px; }
+  html, body { height:100%; margin:0; background:#000; }
+  .frame { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#000; color:#fff; font-family:Arial, Helvetica, sans-serif; }
+  #wrap { width:100%; max-width:var(--max-width); text-align:center; padding:var(--pad); }
+  #label { font-size:var(--label-size); margin-bottom:8px; }
+  #time { font-size:var(--time-size); font-weight:700; }
+  #ampm { font-size:var(--ampm-size); font-weight:700; margin-left:6px; }
+  #date { font-size:var(--date-size); margin-top:18px; font-weight:500; }
+  @media (max-width:600px){ :root{ --time-size:42px; --ampm-size:42px; --date-size:24px; } }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div id="wrap">
+      <div id="label">Sydney</div>
+      <div><span id="time">--:--</span><span id="ampm"></span></div>
+      <div id="date">—</div>
+    </div>
+  </div>
 
-    /* Force all injected parts to be white and centered */
-    #clock_block_cb68a6bc0be88f6,
-    #clock_block_cb68a6bc0be88f6 * {
-      color: #fff !important;
-      text-align: center !important;
-      line-height: 1.15;
-    }
+<script>
+function fmtSydney(){
+  const tz = 'Australia/Sydney';
+  const now = new Date();
 
-    /* Sydney label */
-    #city-label {
-      display: inline-block;
-      margin-bottom: 8px;
-      font-size: va
+  // hours:minutes 12h
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hour12: true, hour: 'numeric', minute: '2-digit'
+  }).formatToParts(now);
+
+  let h = parts.find(p=>p.type==='hour')?.value || '--';
+  let m = parts.find(p=>p.type==='minute')?.value || '--';
+  let dayStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  }).format(now);
+
+  const ampm = parts.find(p=>p.type==='dayPeriod')?.value?.toUpperCase() || '';
+
+  document.getElementById('time').textContent = `${h}:${m}`;
+  document.getElementById('ampm').textContent = ampm;
+  document.getElementById('date').textContent = dayStr;
+}
+fmtSydney();
+setInterval(fmtSydney, 1000);
+</script>
+</body>
+</html>
