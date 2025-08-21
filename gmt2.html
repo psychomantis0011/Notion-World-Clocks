@@ -7,10 +7,10 @@
 <style>
   :root{ --time-size:126px; --ampm-size:56px; --date-size:18px; --label-size:18px; --pad:20px; }
 
-  /* NEW: keep padding inside the height calc */
+  /* keep padding inside the height calc */
   *, *::before, *::after { box-sizing: border-box; }
 
-  /* NEW: match iframe height and hide overflow; make background transparent for Notion */
+  /* match iframe height and hide overflow; make background transparent for Notion */
   html, body {
     height: 100%;
     margin: 0;
@@ -20,7 +20,7 @@
     font-family: Arial, Helvetica, sans-serif;
   }
 
-  /* NEW: use height:100% instead of 100vh */
+  /* use height:100% instead of 100vh */
   .frame {
     height: 100%;
     display: flex;
@@ -41,7 +41,11 @@
 <div class="frame">
   <div class="card">
     <div class="label">CEST</div>
-    <div class="timeRow"><span id="time">--:--</span><span id="ampm"></span></div>
+    <!-- ✅ Added class="time" and class="ampm" -->
+    <div class="timeRow">
+      <span id="time" class="time">--:--</span>
+      <span id="ampm" class="ampm"></span>
+    </div>
     <div class="date" id="date">—</div>
   </div>
 </div>
