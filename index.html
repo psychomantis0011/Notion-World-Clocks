@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Sydney Clock</title>
+  <meta charset="UTF-8" />
+  <title>Sydney Clock (Notion-Embed)</title>
   <style>
-    body {
-      margin: 0;
-      background-color: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    :root{
+      /* tweak these to taste */
+      --time-size: 56px;
+      --ampm-size: 56px;      /* match time */
+      --date-size: 34px;
+      --label-size: 16px;
+      --max-width: 900px;     /* fit nicely in Notion embed */
+      --pad: 16px;
     }
-    #clock-container {
-      text-align: center;
-      color: white;
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+    }
+    /* Center the whole widget in the frame */
+    .frame {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: #fff;
       font-family: Arial, Helvetica, sans-serif;
     }
-    #clock-container a {
-      color: white !important;
-      text-decoration: none;
-      font-size: 18px;
-      margin-bottom: 8px;
-      display: block;
+    #clock-container {
+      width: 100%;
+      max-width: var(--max-width);
+      text-align: center !important;
+      padding: var(--pad);
     }
+
+    /* Force all injected parts to be white and centered */
     #clock_block_cb68a6bc0be88f6,
     #clock_block_cb68a6bc0be88f6 * {
-      color: white !important;
-      font-size: 36px !important;
-      font-weight: bold !important;
+      color: #fff !important;
+      text-align: center !important;
+      line-height: 1.15;
     }
-  </style>
-</head>
-<body>
-  <div id="clock-container">
-    <a href="//24timezones.com/Sydney/time" 
-       class="clock24" 
-       id="tz24-1755757579-c1240-eyJob3VydHlwZSI6MTIsInNob3dkYXRlIjoiMSIsInNob3dzZWNvbmRzIjoiMCIsImNvbnRhaW5lcl9pZCI6ImNsb2NrX2Jsb2NrX2NiNjhhNmJjMGJlODhmNiIsInR5cGUiOiJkYiIsImxhbmciOiJlbiJ9" 
-       title="World Clock :: Sydney" 
-       target="_blank" 
-       rel="nofollow">
-       Sydney
-    </a>
-    <div id="clock_block_cb68a6bc0be88f6"></div>
-  </div>
 
-  <script type="text/javascript" src="//w.24timezones.com/l.js" async></script>
-</body>
-</html>
+    /* Sydney label */
+    #city-label {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: va
