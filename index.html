@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Sydney Clock</title>
@@ -12,24 +12,28 @@
       align-items: center;
       height: 100vh;
     }
-    #clock_block_cb68a6bc0be88f6, 
-    #clock_block_cb68a6bc0be88f6 * {
-      color: white !important;
-      font-size: 28px !important;
-      font-family: Arial, sans-serif !important;
+    #clock-container {
+      text-align: center;
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
     }
-    a {
+    #clock-container a {
       color: white !important;
       text-decoration: none;
-      font-size: 16px;
+      font-size: 18px;
+      margin-bottom: 8px;
       display: block;
-      text-align: center;
-      margin-bottom: 10px;
+    }
+    #clock_block_cb68a6bc0be88f6,
+    #clock_block_cb68a6bc0be88f6 * {
+      color: white !important;
+      font-size: 36px !important;
+      font-weight: bold !important;
     }
   </style>
 </head>
 <body>
-  <div>
+  <div id="clock-container">
     <a href="//24timezones.com/Sydney/time" 
        class="clock24" 
        id="tz24-1755757579-c1240-eyJob3VydHlwZSI6MTIsInNob3dkYXRlIjoiMSIsInNob3dzZWNvbmRzIjoiMCIsImNvbnRhaW5lcl9pZCI6ImNsb2NrX2Jsb2NrX2NiNjhhNmJjMGJlODhmNiIsInR5cGUiOiJkYiIsImxhbmciOiJlbiJ9" 
