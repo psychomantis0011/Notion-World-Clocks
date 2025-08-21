@@ -25,14 +25,14 @@
     width:100%;
   }
   .card {
-    flex: 1 1 180px; /* shrink/grow, min 180px */
+    flex: 1 1 200px;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px;
     padding: 14px 16px;
     background: #0a0a0a;
     text-align: center;
-    min-width: 180px;
-    max-width: 220px;
+    min-width: 200px;
+    max-width: 240px;
   }
   .label { font-size: var(--label-size); opacity: 0.9; margin-bottom: 6px; }
   .timeRow { display:inline-flex; align-items: baseline; gap:6px; }
@@ -96,16 +96,34 @@ function makeCard(z) {
   row.appendChild(card);
 }
 
+function getOrdinal(n) {
+  if (n > 3 && n < 21) return n + "th"; // catch 11th–19th
+  switch (n % 10) {
+    case 1: return n + "st";
+    case 2: return n + "nd";
+    case 3: return n + "rd";
+    default: return n + "th";
+  }
+}
+
+function fmtDate(now, tz) {
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: tz };
+  const parts = new Intl.DateTimeFormat('en-GB', opts).formatToParts(now);
+
+  const weekday = parts.find(p => p.type === 'weekday')?.value;
+  const day = parseInt(parts.find(p => p.type === 'day')?.value, 10);
+  const month = parts.find(p => p.type === 'month')?.value;
+  const year = parts.find(p => p.type === 'year')?.value;
+
+  return `${weekday}, ${getOrdinal(day)} ${month}, ${year}`;
+}
+
 function toParts(now, tz) {
   return new Intl.DateTimeFormat('en-US', {
     timeZone: tz, hour12: true, hour: 'numeric', minute: '2-digit'
   }).formatToParts(now);
 }
-function fmtDate(now, tz) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, weekday: 'short', month: 'short', day: 'numeric'
-  }).format(now);
-}
+
 function updateAll() {
   const now = new Date();
   ZONES.forEach(z => {
