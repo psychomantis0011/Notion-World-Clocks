@@ -2,52 +2,145 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Sydney Clock (Pure JS)</title>
+<title>Multi Timezones (Notion-Embed)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  :root{ --time-size:56px; --ampm-size:56px; --date-size:34px; --label-size:16px; --max-width:900px; --pad:16px; }
+  :root{
+    --time-size: 48px;
+    --ampm-size: 48px;
+    --date-size: 18px;
+    --label-size: 16px;
+    --max-width: 1100px;
+    --gap: 18px;
+    --pad: 16px;
+  }
   html, body { height:100%; margin:0; background:#000; }
-  .frame { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#000; color:#fff; font-family:Arial, Helvetica, sans-serif; }
-  #wrap { width:100%; max-width:var(--max-width); text-align:center; padding:var(--pad); }
-  #label { font-size:var(--label-size); margin-bottom:8px; }
-  #time { font-size:var(--time-size); font-weight:700; }
-  #ampm { font-size:var(--ampm-size); font-weight:700; margin-left:6px; }
-  #date { font-size:var(--date-size); margin-top:18px; font-weight:500; }
-  @media (max-width:600px){ :root{ --time-size:42px; --ampm-size:42px; --date-size:24px; } }
+  body { color:#fff; font-family: Arial, Helvetica, sans-serif; }
+  .frame {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:#000; padding:var(--pad);
+  }
+  .wrap { width:100%; max-width:var(--max-width); }
+  .grid {
+    display:grid; gap:var(--gap);
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+  }
+  /* Sydney spans full width on top */
+  .card.sydney { grid-column: 1 / -1; }
+
+  .card {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 18px 20px;
+    background: #0a0a0a;
+    text-align: center;
+  }
+  .label { font-size: var(--label-size); opacity: 0.9; margin-bottom: 6px; }
+  .timeRow { display:inline-flex; align-items: baseline; gap:8px; }
+  .time { font-size: var(--time-size); font-weight: 700; letter-spacing: 0.5px; }
+  .ampm { font-size: var(--ampm-size); font-weight: 700; }
+  .date { font-size: var(--date-size); opacity: 0.95; margin-top: 10px; }
+
+  @media (max-width: 720px){
+    :root{ --time-size: 40px; --ampm-size: 40px; --date-size: 16px; }
+    .grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
   <div class="frame">
-    <div id="wrap">
-      <div id="label">Sydney</div>
-      <div><span id="time">--:--</span><span id="ampm"></span></div>
-      <div id="date">—</div>
+    <div class="wrap">
+      <div class="grid" id="grid">
+        <!-- Cards are injected by JS -->
+      </div>
     </div>
   </div>
 
 <script>
-function fmtSydney(){
-  const tz = 'Australia/Sydney';
-  const now = new Date();
+/**
+ * Order matters: Sydney first, then GMT, CEST, MST, EDT.
+ * We use representative IANA time zones:
+ *  - GMT  -> Etc/UTC (no DST)
+ *  - CEST -> Europe/Berlin (observes CET/CEST)
+ *  - MST  -> America/Phoenix (permanent MST, no DST)
+ *  - EDT  -> America/New_York (EST/EDT depending on date)
+ */
+const ZONES = [
+  { id: 'syd',  label: 'Sydney', tz: 'Australia/Sydney',   wide: true,  wantAbbrev: 'AEST/AEDT' },
+  { id: 'gmt',  label: 'GMT',    tz: 'Etc/UTC',            wantAbbrev: 'GMT'       },
+  { id: 'cest', label: 'CEST',   tz: 'Europe/Berlin',      wantAbbrev: 'CEST/CET'  },
+  { id: 'mst',  label: 'MST',    tz: 'America/Phoenix',    wantAbbrev: 'MST'       },
+  { id: 'edt',  label: 'EDT',    tz: 'America/New_York',   wantAbbrev: 'EDT/EST'   },
+];
 
-  // hours:minutes 12h
-  const parts = new Intl.DateTimeFormat('en-US', {
+const grid = document.getElementById('grid');
+
+function makeCard(z) {
+  const card = document.createElement('div');
+  card.className = 'card' + (z.wide ? ' sydney' : '');
+  card.id = `card-${z.id}`;
+
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = z.label;
+
+  const timeRow = document.createElement('div');
+  timeRow.className = 'timeRow';
+
+  const timeEl = document.createElement('span');
+  timeEl.className = 'time';
+  timeEl.id = `time-${z.id}`;
+  timeEl.textContent = '--:--';
+
+  const ampmEl = document.createElement('span');
+  ampmEl.className = 'ampm';
+  ampmEl.id = `ampm-${z.id}`;
+  ampmEl.textContent = '';
+
+  timeRow.appendChild(timeEl);
+  timeRow.appendChild(ampmEl);
+
+  const dateEl = document.createElement('div');
+  dateEl.className = 'date';
+  dateEl.id = `date-${z.id}`;
+  dateEl.textContent = '—';
+
+  card.appendChild(label);
+  card.appendChild(timeRow);
+  card.appendChild(dateEl);
+  grid.appendChild(card);
+}
+
+function toParts(now, tz) {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: tz, hour12: true, hour: 'numeric', minute: '2-digit'
   }).formatToParts(now);
+}
 
-  let h = parts.find(p=>p.type==='hour')?.value || '--';
-  let m = parts.find(p=>p.type==='minute')?.value || '--';
-  let dayStr = new Intl.DateTimeFormat('en-US', {
+function fmtDate(now, tz) {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   }).format(now);
-
-  const ampm = parts.find(p=>p.type==='dayPeriod')?.value?.toUpperCase() || '';
-
-  document.getElementById('time').textContent = `${h}:${m}`;
-  document.getElementById('ampm').textContent = ampm;
-  document.getElementById('date').textContent = dayStr;
 }
-fmtSydney();
-setInterval(fmtSydney, 1000);
+
+function updateAll() {
+  const now = new Date();
+  ZONES.forEach(z => {
+    const parts = toParts(now, z.tz);
+    const h = parts.find(p => p.type === 'hour')?.value || '--';
+    const m = parts.find(p => p.type === 'minute')?.value || '--';
+    const dp = (parts.find(p => p.type === 'dayPeriod')?.value || '').toUpperCase();
+
+    document.getElementById(`time-${z.id}`).textContent = `${h}:${m}`;
+    document.getElementById(`ampm-${z.id}`).textContent = dp;
+    document.getElementById(`date-${z.id}`).textContent = fmtDate(now, z.tz);
+  });
+}
+
+// Build cards and start clock
+ZONES.forEach(makeCard);
+updateAll();
+setInterval(updateAll, 1000);
 </script>
 </body>
 </html>
