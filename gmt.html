@@ -6,8 +6,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{ --time-size:56px; --ampm-size:56px; --date-size:18px; --label-size:18px; --pad:20px; }
-  html, body { height:100%; margin:0; background:transparent; color:#fff; font-family:Arial, Helvetica, sans-serif; }
-  .frame { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:var(--pad); }
+  
+  /* NEW: keep padding inside the height calc */
+  *, *::before, *::after { box-sizing: border-box; }
+  
+  /* NEW: match iframe height and hide overflow; make background transparent for Notion */
+  html, body {
+    height:100%;
+    margin:0;
+    background:transparent;
+    color:#fff;
+    overflow: hidden  /* no scroll bars*/
+    font-family:Arial, Helvetica, sans-serif; 
+  }
+  
+  .frame { 
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:var(--pad); }  /* included in height via box-sizing */
+  
   .card { text-align:center; }
   .label { font-size:var(--label-size); opacity:.95; margin-bottom:8px; }
   .timeRow { display:inline-flex; align-items:baseline; gap:8px; }
